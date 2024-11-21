@@ -9,7 +9,8 @@ class KategoriController extends Controller
 {
     public function index()
     {
-        $kategori = Kategori::all();
+        // Menampilkan semua kategori beserta barang terkait
+        $kategori = Kategori::with('barangs')->get();
         return response()->json($kategori);
     }
 
@@ -21,12 +22,20 @@ class KategoriController extends Controller
         ]);
 
         $kategori = Kategori::create($validatedData);
+        // Menambahkan relasi barang setelah pembuatan
+        $kategori->load('barangs');
         return response()->json($kategori, 201);
     }
 
     public function show($id)
     {
-        $kategori = Kategori::findOrFail($id);
+        // Menampilkan kategori berdasarkan ID beserta barang terkait
+        $kategori = Kategori::with('barangs')->find($id);
+
+        if (!$kategori) {
+            return response()->json(['message' => 'Kategori not found'], 404);
+        }
+
         return response()->json($kategori);
     }
 
@@ -39,12 +48,16 @@ class KategoriController extends Controller
 
         $kategori = Kategori::findOrFail($id);
         $kategori->update($validatedData);
+        // Menambahkan relasi barang setelah pembaruan
+        $kategori->load('barangs');
         return response()->json($kategori);
     }
 
     public function destroy($id)
     {
-        Kategori::findOrFail($id)->delete();
-        return response()->json('Deleted successfully', 200);
+        $kategori = Kategori::findOrFail($id);
+        $kategori->delete();
+
+        return response()->json(['message' => 'Deleted successfully'], 200);
     }
 }

@@ -9,7 +9,8 @@ class KaryawanController extends Controller
 {
     public function index()
     {
-        $karyawan = Karyawan::all();
+        // Menampilkan semua karyawan beserta relasi peminjamannya
+        $karyawan = Karyawan::with('peminjamans')->get();
         return response()->json($karyawan);
     }
 
@@ -23,12 +24,20 @@ class KaryawanController extends Controller
         ]);
 
         $karyawan = Karyawan::create($validatedData);
+        // Menambahkan relasi peminjamans setelah pembuatan
+        $karyawan->load('peminjamans');
         return response()->json($karyawan, 201);
     }
 
     public function show($id)
     {
-        $karyawan = Karyawan::findOrFail($id);
+        // Menampilkan karyawan berdasarkan ID beserta relasi peminjamannya
+        $karyawan = Karyawan::with('peminjamans')->find($id);
+
+        if (!$karyawan) {
+            return response()->json(['message' => 'Karyawan not found'], 404);
+        }
+
         return response()->json($karyawan);
     }
 
@@ -43,12 +52,16 @@ class KaryawanController extends Controller
 
         $karyawan = Karyawan::findOrFail($id);
         $karyawan->update($validatedData);
+        // Menambahkan relasi peminjamans setelah pembaruan
+        $karyawan->load('peminjamans');
         return response()->json($karyawan);
     }
 
     public function destroy($id)
     {
-        Karyawan::findOrFail($id)->delete();
-        return response()->json('Deleted successfully', 200);
+        $karyawan = Karyawan::findOrFail($id);
+        $karyawan->delete();
+
+        return response()->json(['message' => 'Deleted successfully'], 200);
     }
 }

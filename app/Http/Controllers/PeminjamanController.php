@@ -9,7 +9,8 @@ class PeminjamanController extends Controller
 {
     public function index()
     {
-        $peminjaman = Peminjaman::all();
+        // Menampilkan semua peminjaman beserta relasi barang dan karyawan
+        $peminjaman = Peminjaman::with(['barang', 'karyawan'])->get();
         return response()->json($peminjaman);
     }
 
@@ -24,12 +25,20 @@ class PeminjamanController extends Controller
         ]);
 
         $peminjaman = Peminjaman::create($validatedData);
+        // Menambahkan relasi barang dan karyawan setelah pembuatan
+        $peminjaman->load(['barang', 'karyawan']);
         return response()->json($peminjaman, 201);
     }
 
     public function show($id)
     {
-        $peminjaman = Peminjaman::findOrFail($id);
+        // Menampilkan peminjaman berdasarkan ID beserta relasi barang dan karyawan
+        $peminjaman = Peminjaman::with(['barang', 'karyawan'])->find($id);
+
+        if (!$peminjaman) {
+            return response()->json(['message' => 'Peminjaman not found'], 404);
+        }
+
         return response()->json($peminjaman);
     }
 
@@ -45,12 +54,16 @@ class PeminjamanController extends Controller
 
         $peminjaman = Peminjaman::findOrFail($id);
         $peminjaman->update($validatedData);
+        // Menambahkan relasi barang dan karyawan setelah pembaruan
+        $peminjaman->load(['barang', 'karyawan']);
         return response()->json($peminjaman);
     }
 
     public function destroy($id)
     {
-        Peminjaman::findOrFail($id)->delete();
-        return response()->json('Deleted successfully', 200);
+        $peminjaman = Peminjaman::findOrFail($id);
+        $peminjaman->delete();
+
+        return response()->json(['message' => 'Deleted successfully'], 200);
     }
 }

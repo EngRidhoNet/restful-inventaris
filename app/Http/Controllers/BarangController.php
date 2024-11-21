@@ -9,19 +9,28 @@ class BarangController extends Controller
 {
     public function index()
     {
-        $barang = Barang::all();
+        // Menampilkan semua barang beserta relasi kategori dan peminjaman
+        $barang = Barang::with(['kategori', 'peminjaman'])->get();
         return response()->json($barang);
     }
 
     public function store(Request $request)
     {
         $barang = Barang::create($request->all());
+        // Menampilkan barang yang baru dibuat beserta relasinya
+        $barang->load(['kategori', 'peminjaman']);
         return response()->json($barang, 201);
     }
 
     public function show($id)
     {
-        $barang = Barang::find($id);
+        // Menampilkan barang berdasarkan id beserta relasi kategori dan peminjaman
+        $barang = Barang::with(['kategori', 'peminjaman'])->find($id);
+
+        if (!$barang) {
+            return response()->json(['message' => 'Barang not found'], 404);
+        }
+
         return response()->json($barang);
     }
 
@@ -29,13 +38,16 @@ class BarangController extends Controller
     {
         $barang = Barang::findOrFail($id);
         $barang->update($request->all());
+        // Menampilkan barang yang diperbarui beserta relasinya
+        $barang->load(['kategori', 'peminjaman']);
         return response()->json($barang);
     }
 
     public function destroy($id)
     {
-        Barang::findOrFail($id)->delete();
-        return response()->json('Deleted successfully', 200);
-    }
+        $barang = Barang::findOrFail($id);
+        $barang->delete();
 
+        return response()->json(['message' => 'Deleted successfully'], 200);
+    }
 }
